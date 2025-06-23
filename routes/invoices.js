@@ -26,7 +26,16 @@ router.post('/', async (req, res) => {
 // Get invoices only for the authenticated user
 router.get('/', async (req, res) => {
   try {
-    const invoices = await Invoice.find({ userId: req.user.id }); // filter by userId
+    let invoices;
+
+    if (req.user.role === 'admin') {
+      // Admin can see everything
+      invoices = await Invoice.find();
+    } else {
+      // Regular users see only their own
+      invoices = await Invoice.find({ userId: req.user.id });
+    }
+
     res.json(invoices);
   } catch (err) {
     res.status(500).json({ error: err.message });
