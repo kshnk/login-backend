@@ -7,15 +7,31 @@ const router = express.Router();
 // Protect all routes with auth middleware
 router.use(authMiddleware);
 
-// Create invoice: attach userId from the authenticated user
+// Create invoice: from logged-in user to another user
 router.post('/', async (req, res) => {
   try {
-    const invoiceData = {
-      ...req.body,
-      userId: req.user.id,  // add userId from token payload
-    };
+    const { toUserId, client, items, total, dueDate, poNumber, shipping, tax, gst } = req.body;
 
-    const invoice = new Invoice(invoiceData);
+
+    if (!toUserId) {
+      return res.status(400).json({ error: 'Recipient (toUserId) is required' });
+    }
+
+    const invoice = new Invoice({
+      fromUser: req.user.id,
+      toUser: toUserId,
+      client,
+      items,
+      total,
+      dueDate,
+      poNumber,
+      shipping,
+      tax,
+      gst,
+      invoiceNumber: `INV-${Date.now()}` // optional: generate simple invoice number
+    });
+
+
     await invoice.save();
     res.status(201).json(invoice);
   } catch (err) {
@@ -23,17 +39,22 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Get invoices only for the authenticated user
+// Get invoices
 router.get('/', async (req, res) => {
   try {
     let invoices;
 
     if (req.user.role === 'admin') {
-      // Admin can see everything
+      // Admins can view all invoices
       invoices = await Invoice.find();
     } else {
-      // Regular users see only their own
-      invoices = await Invoice.find({ userId: req.user.id });
+      // Regular users see invoices they sent or received
+      invoices = await Invoice.find({
+        $or: [
+          { fromUser: req.user.id },
+          { toUser: req.user.id }
+        ]
+      });
     }
 
     res.json(invoices);

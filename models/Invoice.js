@@ -1,16 +1,24 @@
 const mongoose = require('mongoose');
 
+const mongoose = require('mongoose');
+
 const InvoiceSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  invoiceNumber: { type: String, required: true, unique: true }, // You can generate this in the backend
+  fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  toUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   client: { type: String, required: true },
+  poNumber: { type: String }, // Links to PO
   items: [{
-    description: String,
-    quantity: Number,
-    price: Number
+    description: { type: String, required: true },
+    quantity: { type: Number, required: true },
+    price: { type: Number, required: true }
   }],
-  total: Number,
-  dueDate: Date,
-  status: { type: String, default: 'unpaid' },
+  shipping: { type: Number, default: 0 },
+  tax: { type: Number, default: 0 },
+  gst: { type: Number, default: 0 },
+  total: { type: Number, required: true },
+  dueDate: { type: Date },
+  status: { type: String, enum: ['unpaid', 'paid', 'cancelled'], default: 'unpaid' },
   createdAt: { type: Date, default: Date.now }
 });
 
