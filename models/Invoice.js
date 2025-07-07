@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 
-const mongoose = require('mongoose');
-
 const InvoiceSchema = new mongoose.Schema({
   invoiceNumber: { type: String, required: true, unique: true }, // You can generate this in the backend
   fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
