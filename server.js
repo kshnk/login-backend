@@ -16,6 +16,9 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/pos', poRoutes);
+const chatRoutes = require('./routes/chat');
+app.use('/chat', chatRoutes);
+
 
 // MongoDB connection
 console.log("Connecting to MongoDB...");
